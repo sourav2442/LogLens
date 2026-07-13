@@ -1,0 +1,24 @@
+# Python virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# VS Code settings
+.vscode/
+
+# Uploaded files
+app/uploads/
+
+# Generated reports
+app/reports/
+
+# Environment variables
+.env
+
+# macOS
+.DS_Store
+
+# Windows thumbnail cache
+Thumbs.db
