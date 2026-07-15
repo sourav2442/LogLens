@@ -18,6 +18,20 @@
     <div class="card">
 
         <h1>🛡️ LogLens</h1>
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+
+        <label for="logfile">Select Log File:</label>
+
+        <input
+            type="file"
+            id="logfile"
+            name="logfile"
+            required
+        >
+
+        <button type="submit">Analyze Log</button>
+
+    </form>
 
         <h2>Simplified Security Log Analysis</h2>
 
