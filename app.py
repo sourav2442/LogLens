@@ -20,7 +20,9 @@ def home():
         total_logs=results["total_logs"],
         failed_logins=results["failed_logins"],
         brute_force_ips=results["brute_force_ips"],
-        alerts=results["alerts"]
+        alerts=results["alerts"],
+        status_counts=results["status_counts"],
+        attack_summary=results["attack_summary"]
     )
 @app.route("/upload", methods=["POST"])
 def upload():
@@ -45,11 +47,13 @@ def upload():
     results = parse_logs(file_path)
 
     return render_template(
-        "index.html",
-        total_logs=results["total_logs"],
-        failed_logins=results["failed_logins"],
-        brute_force_ips=results["brute_force_ips"],
-        alerts=results["alerts"]
+    "index.html",
+    total_logs=results["total_logs"],
+    failed_logins=results["failed_logins"],
+    brute_force_ips=results["brute_force_ips"],
+    alerts=results["alerts"],
+    status_counts=results["status_counts"],
+    attack_summary=results["attack_summary"]
     )
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5001, debug=True)

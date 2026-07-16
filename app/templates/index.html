@@ -90,18 +90,52 @@
 
     <h2>🚨 Recent Security Alerts</h2>
 
+    <hr>
+
     <ul>
     {% for alert in alerts %}
         <li>{{ alert }}</li>
     {% endfor %}
     </ul>
 
+
 </div>
 
     </div>
 
 </div>
+<hr>
+
+<h2>Security Analytics</h2>
+
+<div class="charts-grid">
+
+    <div class="chart-card">
+        <h3>Status Code Distribution</h3>
+        <div class="chart-container">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <h3>Attack Summary</h3>
+        <div class="chart-container">
+            <canvas id="attackChart"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<script id="status-data" type="application/json">
+{{ status_counts | tojson }}
+</script>
+<script id="attack-data" type="application/json">
+{{ attack_summary | tojson }}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
 
 </body>
-
 </html>

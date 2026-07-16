@@ -2,21 +2,32 @@ from detector.detector import analyze_logs
 
 def parse_logs(log_file="app/sample_logs/access.log"):
     log_entries = []
+    status_counts = {}
 
     with open(log_file, "r") as file:
         for line in file:
             parts = line.split()
 
+            status = parts[8]
+
             log_entries.append({
                 "ip": parts[0],
                 "method": parts[5].replace('"', ''),
                 "url": parts[6],
-                "status": parts[8]
+                "status": status,
             })
+
+            status_counts[status] = status_counts.get(status, 0) + 1
 
     results = analyze_logs(log_entries)
 
+    results["status_counts"] = status_counts
     results["total_logs"] = len(log_entries)
+    results["attack_summary"] = {
+    "Normal Requests": len(log_entries) - len(results["alerts"]),
+    "Failed Logins": sum(results["failed_logins"].values()),
+    "Brute Force IPs": len(results["brute_force_ips"])
+    }
 
     return results
 
