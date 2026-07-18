@@ -1,6 +1,4 @@
-const statusCounts = JSON.parse(
-    document.getElementById("status-data").textContent
-);
+const statusCounts = statusData;
 
 const labels = Object.keys(statusCounts);
 const values = Object.values(statusCounts);
@@ -50,9 +48,7 @@ new Chart(ctx, {
 // Attack Summary Pie Chart
 // ----------------------------
 
-const attackSummary = JSON.parse(
-    document.getElementById("attack-data").textContent
-);
+const attackSummary = attackData;
 
 const attackLabels = Object.keys(attackSummary);
 const attackValues = Object.values(attackSummary);

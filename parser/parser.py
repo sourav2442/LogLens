@@ -36,6 +36,20 @@ def parse_logs(log_file="app/sample_logs/access.log"):
         **attack_summary
     }
 
+    # Dashboard Statistics
+    results["dashboard_stats"] = {
+        "total_logs": len(log_entries),
+        "total_alerts": len(results["alerts"]),
+        "high_severity": sum(
+            1 for alert in results["alerts"]
+            if alert["severity"] == "High"
+        ),
+        "medium_severity": sum(
+            1 for alert in results["alerts"]
+            if alert["severity"] == "Medium"
+        ),
+    }
+
     return results
 
 

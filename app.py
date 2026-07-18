@@ -22,7 +22,8 @@ def home():
         brute_force_ips=results["brute_force_ips"],
         alerts=results["alerts"],
         status_counts=results["status_counts"],
-        attack_summary=results["attack_summary"]
+        attack_summary=results["attack_summary"],
+        dashboard_stats=results["dashboard_stats"],
     )
 @app.route("/upload", methods=["POST"])
 def upload():
@@ -53,7 +54,8 @@ def upload():
     brute_force_ips=results["brute_force_ips"],
     alerts=results["alerts"],
     status_counts=results["status_counts"],
-    attack_summary=results["attack_summary"]
+    attack_summary=results["attack_summary"],
+    dashboard_stats=results.get("dashboard_stats", {})
     )
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5001, debug=True)
