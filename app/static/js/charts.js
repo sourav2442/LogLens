@@ -69,9 +69,13 @@ new Chart(attackCtx, {
             data: attackValues,
 
             backgroundColor: [
-                "#28a745",   // Green
-                "#fd7e14",   // Orange
-                "#dc3545"    // Red
+                "#28a745", // Normal
+                "#ffc107", // Failed Login
+                "#dc3545", // Brute Force
+                "#6f42c1", // SQL Injection
+                "#0dcaf0", // XSS
+                "#fd7e14", // Directory Traversal
+                "#20c997", // Future attack types
             ]
         }]
     },

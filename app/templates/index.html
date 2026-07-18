@@ -94,7 +94,16 @@
 
     <ul>
     {% for alert in alerts %}
-        <li>{{ alert }}</li>
+        <li>
+            <strong>{{ alert.severity }}</strong> |
+            {{ alert.type }} |
+            {{ alert.ip }}
+
+            {% if alert.url != "-" %}
+                <br>
+                <small>{{ alert.url }}</small>
+            {% endif %}
+        </li>
     {% endfor %}
     </ul>
 

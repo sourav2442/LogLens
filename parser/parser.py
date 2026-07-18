@@ -23,10 +23,17 @@ def parse_logs(log_file="app/sample_logs/access.log"):
 
     results["status_counts"] = status_counts
     results["total_logs"] = len(log_entries)
+    attack_summary = {}
+
+    for alert in results["alerts"]:
+        attack_type = alert["type"]
+        attack_summary[attack_type] = attack_summary.get(attack_type, 0) + 1
+
+    normal_requests = len(log_entries) - len(results["alerts"])
+
     results["attack_summary"] = {
-    "Normal Requests": len(log_entries) - len(results["alerts"]),
-    "Failed Logins": sum(results["failed_logins"].values()),
-    "Brute Force IPs": len(results["brute_force_ips"])
+        "Normal Requests": normal_requests,
+        **attack_summary
     }
 
     return results
