@@ -1,0 +1,10 @@
+Severity,Attack Type,IP Address,URL
+Medium,Failed Login,192.168.1.20,/login
+Medium,Failed Login,192.168.1.60,/admin/login
+Medium,Failed Login,192.168.1.60,/admin/login
+Medium,Failed Login,192.168.1.60,/admin/login
+Medium,Failed Login,192.168.1.60,/admin/login
+High,SQL Injection,192.168.1.70,/login.php?id=1%27%20OR%20%271%27%3D%271
+High,XSS,192.168.1.80,/search?q=%3Cscript%3Ealert(1)%3C/script%3E
+High,Directory Traversal,192.168.1.90,/..%2f..%2fetc%2fpasswd
+High,Brute Force,192.168.1.60,-

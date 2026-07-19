@@ -72,6 +72,46 @@
 
         <div class="row mt-4">
 
+<hr>
+
+<div class="panel mb-4">
+
+    <h2>📂 Upload Log File</h2>
+
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+
+        <label for="logfile" class="form-label">
+            Select an Apache/Nginx log file
+        </label>
+
+        <input
+            type="file"
+            class="form-control"
+            id="logfile"
+            name="logfile"
+            accept=".log,.txt"
+            required
+        >
+
+        <button type="submit" class="btn btn-primary mt-3">
+            Analyze Log File
+        </button>
+
+    </form>
+
+</div>
+
+<div class="text-center mb-4">
+
+    <a href="/export/csv" class="btn btn-success">
+        📄 Export Alerts as CSV
+    </a>
+
+    <a href="/export/pdf" class="btn btn-danger ms-2">
+    📄 Export PDF Report
+    </a>
+
+</div>
     <!-- Failed Login Summary -->
     <div class="col-lg-6 mb-4">
         <div class="panel">
@@ -100,11 +140,24 @@
 
 </div>
 
+<div class="panel mb-4">
+
+    <h2>🔍 Search Alerts</h2>
+
+    <input
+        type="text"
+        id="searchInput"
+        class="form-control"
+        placeholder="Search by IP, attack type or URL..."
+    >
+
+</div>
+
         <!-- Recent Alerts -->
        <div class="panel mt-4">
             <h2>🚨 Recent Security Alerts</h2>
 
-            <table class="table table-striped table-hover align-middle">
+            <table id="alertsTable" class="table table-striped table-hover align-middle">
 
                 <thead class="table-dark">
                     <tr>
@@ -119,7 +172,7 @@
 
                 {% for alert in alerts %}
 
-                <tr>
+                <tr class="alert-row">
 
                     <td>
                         {% if alert.severity == "High" %}
@@ -181,6 +234,7 @@
 </script>
 
 <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
 
 </body>
 </html>
