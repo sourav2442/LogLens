@@ -39,6 +39,8 @@ def home():
         status_counts=results["status_counts"],
         attack_summary=results["attack_summary"],
         dashboard_stats=results["dashboard_stats"],
+        top_ips=results["top_ips"],
+        top_urls=results["top_urls"],
     )
 @app.route("/upload", methods=["POST"])
 def upload():
@@ -70,7 +72,9 @@ def upload():
     alerts=results["alerts"],
     status_counts=results["status_counts"],
     attack_summary=results["attack_summary"],
-    dashboard_stats=results.get("dashboard_stats", {})
+    dashboard_stats=results.get("dashboard_stats"),
+    top_ips=results.get("top_ips"),
+    top_urls=results["top_urls"],
     )
 @app.route("/export/csv")
 def export_csv():

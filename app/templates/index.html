@@ -140,6 +140,64 @@
 
 </div>
 
+<div class="panel mt-4">
+
+    <h2>🥇 Top Attacking IPs</h2>
+
+    <table class="table table-striped">
+
+        <thead class="table-dark">
+            <tr>
+                <th>IP Address</th>
+                <th>Alerts</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for ip, count in top_ips.items() %}
+
+        <tr>
+            <td>{{ ip }}</td>
+            <td>{{ count }}</td>
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div><div class="panel mt-4">
+
+    <h2>🎯 Most Targeted URLs</h2>
+
+    <table class="table table-striped">
+
+        <thead class="table-dark">
+            <tr>
+                <th>URL</th>
+                <th>Alerts</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        {% for url, count in top_urls.items() %}
+
+        <tr>
+            <td>{{ url }}</td>
+            <td>{{ count }}</td>
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
 <div class="panel mb-4">
 
     <h2>🔍 Search & Filter Alerts</h2>

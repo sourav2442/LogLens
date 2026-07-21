@@ -9,10 +9,12 @@ __pycache__/
 .vscode/
 
 # Uploaded files
-app/uploads/
+app/uploads/*
+!app/uploads/.gitkeep
 
 # Generated reports
-app/reports/
+app/reports/*
+!app/reports/.gitkeep
 
 # Environment variables
 .env

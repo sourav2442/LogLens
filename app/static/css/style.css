@@ -203,3 +203,6 @@ table{
 .table th{
     vertical-align:middle;
 }
+.panel{
+    margin-bottom: 25px;
+}

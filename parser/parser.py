@@ -21,6 +21,40 @@ def parse_logs(log_file="app/sample_logs/access.log"):
 
     results = analyze_logs(log_entries)
 
+    top_ips = {}
+
+    for alert in results["alerts"]:
+
+        ip = alert["ip"]
+
+        top_ips[ip] = top_ips.get(ip, 0) + 1
+
+    results["top_ips"] = dict(
+        sorted(
+            top_ips.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )
+    )
+
+    top_urls = {}
+
+    for alert in results["alerts"]:
+
+        url = alert["url"]
+
+        if url != "-":
+
+            top_urls[url] = top_urls.get(url, 0) + 1
+
+    results["top_urls"] = dict(
+        sorted(
+            top_urls.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )
+    )
+
     results["status_counts"] = status_counts
     results["total_logs"] = len(log_entries)
     attack_summary = {}
