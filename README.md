@@ -48,32 +48,32 @@ This project was developed as a portfolio project to demonstrate practical skill
 
 ## 🖥️ Dashboard
 
-<img src="screenshots/dashboard.png" width="900">
-<img src="screenshots/dashboard.png(2)" width="900">
+![Dashboard](screenshots/dashboard.png)
+
 ---
 
 ## 📊 Charts
 
-<img src="screenshots/charts.png" width="700">
+![Charts](screenshots/charts.png)
 
 ---
 
 ## 🔍 Search & Filters
 
-<img src="screenshots/filters.png" width="900">
-<img src="screenshots/search.png" width="900">
+![Search & Filters](screenshots/search.png)
+![Search & Filters](screenshots/filters.png)
 
 ---
 
 ## 📈 Analytics
 
-<img src="screenshots/analytics.png" width="900">
+![Analytics](screenshots/analytics.png)
 
 ---
 
 ## 📄 Reports
 
-<img src="screenshots/reports.png" width="700">
+![Reports](screenshots/reports.png)
 
 ## 🏗️ Project Structure
 
