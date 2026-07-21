@@ -82,24 +82,51 @@ This project was developed as a portfolio project to demonstrate practical skill
 LogLens/
 │
 ├── app/
-│   ├── exports/
-│   ├── sample_logs/
 │   ├── static/
 │   │   ├── css/
+│   │   │   └── style.css
+│   │   │
 │   │   └── js/
+│   │       ├── charts.js
+│   │       └── search.js
+│   │
 │   ├── templates/
-│   └── uploads/
+│   │   └── index.html
+│   │
+│   ├── sample_logs/
+│   │   └── access.log
+│   │
+│   ├── uploads/
+│   │   └── .gitkeep
+│   │
+│   ├── reports/
+│   │   └── .gitkeep
+│   │
+│   └── exports/
+│       └── security_report.pdf   (generated automatically)
 │
 ├── detector/
+│   ├── __init__.py
 │   └── detector.py
 │
 ├── parser/
+│   ├── __init__.py
 │   └── parser.py
 │
+├── Screenshots/
+│   ├── dashboard.png
+│   ├── analytics.png
+│   ├── charts.png
+│   ├── filters.png
+│   ├── reports.png
+│   └── search.png
+│
+├── tests/
+│
+├── .gitignore
 ├── app.py
-├── requirements.txt
 ├── README.md
-└── .gitignore
+├── requirements.txt
 ```
 
 ---
