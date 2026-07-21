@@ -48,32 +48,33 @@ This project was developed as a portfolio project to demonstrate practical skill
 
 ## 🖥️ Dashboard
 
-![Dashboard](Screenshots/dashboard.png)
+![Dashboard](https://raw.githubusercontent.com/sourav2442/LogLens/main/Screenshots/dashboard.png)
 
 ---
 
 ## 📊 Charts
 
-![Charts](Screenshots/charts.png)
+![Charts](https://raw.githubusercontent.com/sourav2442/LogLens/main/Screenshots/charts.png)
 
 ---
 
 ## 🔍 Search & Filters
 
-![Search & Filters](Screenshots/search.png)
-![Search & Filters](Screenshots/filters.png)
+![Search](https://raw.githubusercontent.com/sourav2442/LogLens/main/Screenshots/search.png)
+
+![Filters](https://raw.githubusercontent.com/sourav2442/LogLens/main/Screenshots/filters.png)
 
 ---
 
 ## 📈 Analytics
 
-![Analytics](Screenshots/analytics.png)
+![Analytics](https://raw.githubusercontent.com/sourav2442/LogLens/main/Screenshots/analytics.png)
 
 ---
 
 ## 📄 Reports
 
-![Reports](Screenshots/reports.png)
+![Reports](https://raw.githubusercontent.com/sourav2442/LogLens/main/Screenshots/reports.png)
 
 ## 🏗️ Project Structure
 
