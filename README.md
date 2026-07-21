@@ -127,6 +127,7 @@ LogLens/
 ├── app.py
 ├── README.md
 ├── requirements.txt
+└── LICENSE         
 ```
 
 ---
