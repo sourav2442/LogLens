@@ -116,6 +116,108 @@ def detect_suspicious_method(method):
 
     return method.upper() in suspicious_methods
 
+def calculate_ip_risk_scores(alerts, failed_logins):
+    """
+    Calculate risk scores for suspicious IP addresses.
+    Maximum score: 100
+    """
+
+    ip_data = {}
+
+    # Risk weights for alert severity
+    severity_weights = {
+        "Critical": 30,
+        "High": 20,
+        "Medium": 10,
+        "Low": 5
+    }
+
+    # Additional risk for specific attack types
+    attack_weights = {
+        "Brute Force": 20,
+        "SQL Injection": 15,
+        "XSS": 15,
+        "Directory Traversal": 15,
+        "Command Injection": 20,
+        "Scanner Activity": 8,
+        "Suspicious Method": 8
+    }
+
+    # Process security alerts
+    for alert in alerts:
+        ip = alert.get("ip")
+
+        if not ip or ip == "-":
+            continue
+
+        if ip not in ip_data:
+            ip_data[ip] = {
+                "score": 0,
+                "alert_count": 0,
+                "failed_logins": 0,
+                "attack_types": set(),
+                "reasons": []
+            }
+
+        severity = alert.get("severity", "Low")
+        attack_type = alert.get("type", "Unknown")
+
+        score = severity_weights.get(severity, 5)
+        score += attack_weights.get(attack_type, 0)
+
+        ip_data[ip]["score"] += score
+        ip_data[ip]["alert_count"] += 1
+        ip_data[ip]["attack_types"].add(attack_type)
+
+    # Add failed login risk
+    for ip, attempts in failed_logins.items():
+
+        if ip not in ip_data:
+            ip_data[ip] = {
+                "score": 0,
+                "alert_count": 0,
+                "failed_logins": 0,
+                "attack_types": set(),
+                "reasons": []
+            }
+
+        ip_data[ip]["failed_logins"] = attempts
+
+        # Maximum 20 additional points
+        ip_data[ip]["score"] += min(attempts * 5, 20)
+
+    # Generate final risk reports
+    risk_reports = []
+
+    for ip, data in ip_data.items():
+
+        score = min(data["score"], 100)
+
+        if score >= 75:
+            risk_level = "Critical"
+        elif score >= 50:
+            risk_level = "High"
+        elif score >= 30:
+            risk_level = "Medium"
+        else:
+            risk_level = "Low"
+
+        risk_reports.append({
+            "ip": ip,
+            "score": score,
+            "risk_level": risk_level,
+            "alert_count": data["alert_count"],
+            "failed_logins": data["failed_logins"],
+            "attack_types": sorted(data["attack_types"])
+        })
+
+    # Highest-risk IP addresses first
+    risk_reports.sort(
+        key=lambda item: item["score"],
+        reverse=True
+    )
+    return risk_reports
+
 
 # Main Log Analysis Function
 def analyze_logs(log_entries):
@@ -227,8 +329,11 @@ def analyze_logs(log_entries):
                 "message": f"{count} failed login attempts detected"
             })
 
+    ip_risk_scores = calculate_ip_risk_scores(alerts, failed_logins)
+
     return {
         "failed_logins": failed_logins,
         "brute_force_ips": brute_force_ips,
-        "alerts": alerts
+        "alerts": alerts,
+        "ip_risk_scores": ip_risk_scores
     }

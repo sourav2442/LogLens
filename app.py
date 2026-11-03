@@ -41,6 +41,7 @@ def home():
         dashboard_stats=results["dashboard_stats"],
         top_ips=results["top_ips"],
         top_urls=results["top_urls"],
+        ip_risk_scores=results.get("ip_risk_scores", []),
     )
 @app.route("/upload", methods=["POST"])
 def upload():
@@ -75,6 +76,7 @@ def upload():
     dashboard_stats=results.get("dashboard_stats"),
     top_ips=results.get("top_ips"),
     top_urls=results["top_urls"],
+    ip_risk_scores=results.get("ip_risk_scores", []),
     )
 @app.route("/export/csv")
 def export_csv():

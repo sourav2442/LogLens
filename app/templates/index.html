@@ -240,6 +240,127 @@
 
 </div>
 
+<!-- IP Risk Scoring Dashboard -->
+
+<div class="panel mt-4">
+
+    <h2>🛡️ IP Risk Intelligence</h2>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-6">
+            <div class="risk-summary">
+                <h5>Suspicious IP Addresses</h5>
+
+                <h2>{{ ip_risk_scores|length }}</h2>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="risk-summary">
+                <h5>Highest Risk IP</h5>
+
+                {% if ip_risk_scores %}
+                    <h4>{{ ip_risk_scores[0].ip }}</h4>
+                    <p>
+                        {{ ip_risk_scores[0].score }}/100
+                        - {{ ip_risk_scores[0].risk_level }}
+                    </p>
+                {% else %}
+                    <p>No suspicious IP detected</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <h4>IP Risk Ranking</h4>
+
+    <div class="table-responsive">
+
+        <table class="table table-hover align-middle">
+
+            <thead class="table-dark">
+                <tr>
+                    <th>IP Address</th>
+                    <th>Risk Score</th>
+                    <th>Risk Level</th>
+                    <th>Alerts</th>
+                    <th>Failed Logins</th>
+                    <th>Attack Types</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for item in ip_risk_scores %}
+
+                <tr>
+
+                    <td>{{ item.ip }}</td>
+
+                    <td>
+                        <strong>{{ item.score }}/100</strong>
+                    </td>
+
+                    <td>
+
+                        {% if item.risk_level == "Critical" %}
+                            <span class="badge bg-dark">Critical</span>
+
+                        {% elif item.risk_level == "High" %}
+                            <span class="badge bg-danger">High</span>
+
+                        {% elif item.risk_level == "Medium" %}
+                            <span class="badge bg-warning text-dark">Medium</span>
+
+                        {% else %}
+                            <span class="badge bg-success">Low</span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>{{ item.alert_count }}</td>
+
+                    <td>{{ item.failed_logins }}</td>
+
+                    <td>
+                        {{ item.attack_types | join(", ") }}
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+                    <td colspan="6" class="text-center">
+                        No suspicious IP addresses found.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- IP Risk Distribution Chart -->
+
+<div class="panel mt-4">
+
+    <h2>IP Risk Distribution</h2>
+
+    <div class="chart-container">
+        <canvas id="riskChart"></canvas>
+    </div>
+
+</div>
+
         <!-- Recent Alerts -->
        <div class="panel mt-4">
             <h2>🚨 Recent Security Alerts</h2>
@@ -316,8 +437,47 @@
 
 <!-- Pass Flask data to JavaScript -->
 <script>
-    const statusData = {{ status_counts | tojson }};
-    const attackData = {{ attack_summary | tojson }};
+    const statusData = JSON.parse('{{ status_counts | tojson }}');
+    const attackData = JSON.parse('{{ attack_summary | tojson | safe }}');
+    const riskData = JSON.parse('{{ ip_risk_scores | tojson }}');
+
+    const riskLevels = {
+        Low: 0,
+        Medium: 0,
+        High: 0,
+        Critical: 0
+    };
+
+    riskData.forEach(item => {
+        if (riskLevels[item.risk_level] !== undefined) {
+            riskLevels[item.risk_level]++;
+        }
+    });
+
+    new Chart(document.getElementById("riskChart"), {
+        type: "doughnut",
+
+        data: {
+            labels: Object.keys(riskLevels),
+
+            datasets: [{
+                label: "IP Addresses",
+                data: Object.values(riskLevels),
+
+                backgroundColor: [
+                    "#198754",
+                    "#ffc107",
+                    "#dc3545",
+                    "#212529"
+                ]
+            }]
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
 </script>
 
 <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
