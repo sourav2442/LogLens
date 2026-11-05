@@ -7,6 +7,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
 
 from parser.parser import parse_logs
+from database.scan_storage import save_scan
 
 from reportlab.platypus import (
     SimpleDocTemplate,
@@ -65,6 +66,12 @@ def upload():
 
     results = parse_logs(file_path)
 
+    # Save scan results to MongoDB Atlas
+
+    scan_id = save_scan(results)
+
+    print(f"Scan saved to MongoDB. Scan ID: {scan_id}")
+
     return render_template(
     "index.html",
     total_logs=results["total_logs"],
@@ -78,6 +85,59 @@ def upload():
     top_urls=results["top_urls"],
     ip_risk_scores=results.get("ip_risk_scores", []),
     )
+
+@app.route("/history")
+def scan_history():
+
+    from database.db import db
+
+    scans = list(
+        db.scans.find().sort("scan_date", -1).limit(50)
+    )
+
+    return render_template(
+        "history.html",
+        scans=scans
+    )
+
+@app.route("/history/<scan_id>")
+def scan_details(scan_id):
+
+    from flask import abort
+    from database.db import db
+
+    # Find the selected scan
+    scan = db.scans.find_one(
+        {"scan_id": scan_id},
+        {"_id": 0}
+    )
+
+    if scan is None:
+        abort(404)
+
+    # Get alerts belonging to this scan
+    alerts = list(
+        db.alerts.find(
+            {"scan_id": scan_id},
+            {"_id": 0}
+        )
+    )
+
+    # Get IP risk scores belonging to this scan
+    ip_risks = list(
+        db.ip_risks.find(
+            {"scan_id": scan_id},
+            {"_id": 0}
+        ).sort("score", -1)
+    )
+
+    return render_template(
+        "scan_details.html",
+        scan=scan,
+        alerts=alerts,
+        ip_risks=ip_risks
+    )
+
 @app.route("/export/csv")
 def export_csv():
 

@@ -235,3 +235,9 @@ table{
 .table-responsive {
     overflow-x: auto;
 }
+.stat-card h2 {
+    color: white !important;
+    font-size: 36px;
+    font-weight: bold;
+    margin-top: 12px;
+}
