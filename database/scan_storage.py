@@ -12,7 +12,6 @@ def save_scan(results):
     # Get analysis results
     alerts = results.get("alerts", [])
     ip_risks = results.get("ip_risk_scores", [])
-    failed_logins = results.get("failed_logins", {})
 
     # Store scan information
     scan_data = {
@@ -42,7 +41,7 @@ def save_scan(results):
 
         db.alerts.insert_many(alert_documents)
 
-    # Store IP risk scores
+    # Store detailed IP risk intelligence
     if ip_risks:
         risk_documents = []
 
@@ -55,6 +54,7 @@ def save_scan(results):
                 "alert_count": risk.get("alert_count"),
                 "failed_logins": risk.get("failed_logins"),
                 "attack_types": risk.get("attack_types", []),
+                "reasons": risk.get("reasons", []),
                 "scan_date": scan_date
             })
 
