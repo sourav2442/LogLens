@@ -1,3 +1,5 @@
-from database.db import test_connection
+from database.db import test_connection as check_mongodb_connection
 
-test_connection()
+
+def test_mongodb_connection():
+    assert check_mongodb_connection() is True

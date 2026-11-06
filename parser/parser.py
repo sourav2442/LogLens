@@ -5,6 +5,7 @@ from detector.detector import analyze_logs
 
 
 # Apache Common/Combined Access Log parser
+# Apache Common and Combined Access Log Parser
 LOG_PATTERN = re.compile(
     r'^(?P<ip>\S+)\s+\S+\s+\S+\s+'
     r'\[(?P<timestamp>[^\]]+)\]\s+'
@@ -13,6 +14,9 @@ LOG_PATTERN = re.compile(
     r'(?:\s+(?P<protocol>[^"]+))?"\s+'
     r'(?P<status>\d{3})\s+'
     r'(?P<size>\S+)'
+    r'(?:\s+"(?P<referer>[^"]*)"\s+'
+    r'"(?P<user_agent>[^"]*)")?'
+    r'\s*$'
 )
 
 
@@ -30,13 +34,15 @@ def parse_log_line(line):
     data = match.groupdict()
 
     return {
-        "ip": data["ip"],
-        "timestamp": data["timestamp"],
-        "method": data["method"],
-        "url": data["url"],
-        "protocol": data["protocol"] or "-",
-        "status": data["status"],
-        "size": data["size"]
+    "ip": data["ip"],
+    "timestamp": data["timestamp"],
+    "method": data["method"],
+    "url": data["url"],
+    "protocol": data["protocol"] or "-",
+    "status": data["status"],
+    "size": data["size"],
+    "referer": data.get("referer") or "-",
+    "user_agent": data.get("user_agent") or "-"
     }
 
 

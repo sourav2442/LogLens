@@ -1,5 +1,6 @@
 import re
 from urllib.parse import unquote
+from datetime import datetime, timedelta
 
 
 # Normalize URL to detect encoded payloads
@@ -119,12 +120,12 @@ def detect_suspicious_method(method):
 def calculate_ip_risk_scores(alerts, failed_logins):
     """
     Calculate risk scores for suspicious IP addresses.
-    Maximum score: 100
+    Maximum score: 100.
+    Avoid duplicate scoring for repeated alert types.
     """
 
     ip_data = {}
 
-    # Risk weights for alert severity
     severity_weights = {
         "Critical": 30,
         "High": 20,
@@ -132,7 +133,6 @@ def calculate_ip_risk_scores(alerts, failed_logins):
         "Low": 5
     }
 
-    # Additional risk for specific attack types
     attack_weights = {
         "Brute Force": 20,
         "SQL Injection": 15,
@@ -140,11 +140,14 @@ def calculate_ip_risk_scores(alerts, failed_logins):
         "Directory Traversal": 15,
         "Command Injection": 20,
         "Scanner Activity": 8,
-        "Suspicious Method": 8
+        "Suspicious Method": 8,
+        "Suspicious HTTP Method": 8,
+        "Failed Login": 0
     }
 
     # Process security alerts
     for alert in alerts:
+
         ip = alert.get("ip")
 
         if not ip or ip == "-":
@@ -152,53 +155,96 @@ def calculate_ip_risk_scores(alerts, failed_logins):
 
         if ip not in ip_data:
             ip_data[ip] = {
-                "score": 0,
                 "alert_count": 0,
                 "failed_logins": 0,
                 "attack_types": set(),
+                "severity_scores": {},
                 "reasons": []
             }
+
+        data = ip_data[ip]
 
         severity = alert.get("severity", "Low")
         attack_type = alert.get("type", "Unknown")
 
-        score = severity_weights.get(severity, 5)
-        score += attack_weights.get(attack_type, 0)
+        data["alert_count"] += 1
+        data["attack_types"].add(attack_type)
 
-        ip_data[ip]["score"] += score
-        ip_data[ip]["alert_count"] += 1
-        ip_data[ip]["attack_types"].add(attack_type)
+        # Keep only the highest severity score per alert type
+        severity_score = severity_weights.get(severity, 5)
 
-    # Add failed login risk
+        data["severity_scores"][attack_type] = max(
+            data["severity_scores"].get(attack_type, 0),
+            severity_score
+        )
+
+    # Add failed login information
     for ip, attempts in failed_logins.items():
 
         if ip not in ip_data:
             ip_data[ip] = {
-                "score": 0,
                 "alert_count": 0,
                 "failed_logins": 0,
                 "attack_types": set(),
+                "severity_scores": {},
                 "reasons": []
             }
 
         ip_data[ip]["failed_logins"] = attempts
-
-        # Maximum 20 additional points
-        ip_data[ip]["score"] += min(attempts * 5, 20)
 
     # Generate final risk reports
     risk_reports = []
 
     for ip, data in ip_data.items():
 
-        score = min(data["score"], 100)
+        score = 0
+        reasons = []
 
+        # Severity contribution
+        severity_score = sum(data["severity_scores"].values())
+        score += severity_score
+
+        if severity_score:
+            reasons.append(
+                f"Severity-based risk: {severity_score} points"
+            )
+
+        # Attack-specific contribution
+        for attack_type in data["attack_types"]:
+
+            attack_score = attack_weights.get(attack_type, 0)
+
+            if attack_score > 0:
+                score += attack_score
+
+                reasons.append(
+                    f"{attack_type}: +{attack_score} points"
+                )
+
+        # Failed login contribution
+        attempts = data["failed_logins"]
+        login_score = min(attempts * 5, 20)
+
+        score += login_score
+
+        if attempts > 0:
+            reasons.append(
+                f"{attempts} failed login attempts: +{login_score} points"
+            )
+
+        # Maximum risk score
+        score = min(score, 100)
+
+        # Risk classification
         if score >= 75:
             risk_level = "Critical"
+
         elif score >= 50:
             risk_level = "High"
+
         elif score >= 30:
             risk_level = "Medium"
+
         else:
             risk_level = "Low"
 
@@ -207,8 +253,9 @@ def calculate_ip_risk_scores(alerts, failed_logins):
             "score": score,
             "risk_level": risk_level,
             "alert_count": data["alert_count"],
-            "failed_logins": data["failed_logins"],
-            "attack_types": sorted(data["attack_types"])
+            "failed_logins": attempts,
+            "attack_types": sorted(data["attack_types"]),
+            "reasons": reasons
         })
 
     # Highest-risk IP addresses first
@@ -216,6 +263,7 @@ def calculate_ip_risk_scores(alerts, failed_logins):
         key=lambda item: item["score"],
         reverse=True
     )
+
     return risk_reports
 
 
@@ -234,6 +282,16 @@ def analyze_logs(log_entries):
         status = str(entry["status"])
         url = entry["url"]
         method = entry.get("method", "GET")
+        user_agent = entry.get("user_agent", "-")
+
+        if detect_suspicious_user_agent(user_agent):
+            alerts.append({
+                "type": "Suspicious User-Agent",
+                "severity": "Medium",
+                "ip": ip,
+                "url": url,
+                "message": f"Suspicious User-Agent detected: {user_agent}"
+            })
 
         # Failed Login Detection
         if status == "401":
@@ -314,20 +372,61 @@ def analyze_logs(log_entries):
                 "message": f"Suspicious HTTP Method: {method}"
             })
 
-    # Brute Force Detection
-    for ip, count in failed_logins.items():
+    # Time-Based Brute Force Detection
+    time_window = timedelta(minutes=5)
+    brute_force_threshold = 3
 
-        if count >= threshold:
+    failed_login_times = {}
 
-            brute_force_ips.append(ip)
+    for entry in log_entries:
+        if str(entry.get("status")) != "401":
+            continue
 
-            alerts.append({
-                "type": "Brute Force",
-                "severity": "High",
-                "ip": ip,
-                "url": "-",
-                "message": f"{count} failed login attempts detected"
-            })
+        ip = entry.get("ip")
+        timestamp = entry.get("timestamp")
+
+        if not timestamp:
+            continue
+
+        try:
+            login_time = datetime.strptime(
+                timestamp,
+                "%d/%b/%Y:%H:%M:%S %z"
+            )
+        except ValueError:
+            continue
+
+        failed_login_times.setdefault(ip, []).append(login_time)
+
+    for ip, timestamps in failed_login_times.items():
+
+        timestamps.sort()
+
+        for index, current_time in enumerate(timestamps):
+
+            window_start = current_time - time_window
+
+            attempts = [
+                t for t in timestamps
+                if window_start <= t <= current_time
+            ]
+
+            if len(attempts) >= brute_force_threshold:
+                if ip not in brute_force_ips:
+                    brute_force_ips.append(ip)
+
+                    alerts.append({
+                        "type": "Brute Force",
+                        "severity": "High",
+                        "ip": ip,
+                        "url": "-",
+                        "message": (
+                            f"{len(attempts)} failed login attempts "
+                            f"within 5 minutes"
+                        )
+                    })
+
+                    break
 
     ip_risk_scores = calculate_ip_risk_scores(alerts, failed_logins)
 
@@ -337,3 +436,24 @@ def analyze_logs(log_entries):
         "alerts": alerts,
         "ip_risk_scores": ip_risk_scores
     }
+
+
+def detect_suspicious_user_agent(user_agent):
+    if not user_agent or user_agent == "-":
+        return False
+
+    suspicious_agents = [
+        "sqlmap",
+        "nikto",
+        "nmap",
+        "masscan",
+        "zgrab",
+        "dirbuster",
+        "gobuster",
+        "wfuzz",
+        "burpsuite"
+    ]
+
+    user_agent = user_agent.lower()
+
+    return any(agent in user_agent for agent in suspicious_agents)
