@@ -180,3 +180,70 @@ def test_risk_score_maximum_limit():
 
     assert result[0]["score"] == 100
     assert result[0]["risk_level"] == "Critical"
+def test_brute_force_exactly_five_minute_boundary():
+    logs = [
+        {
+            "ip": "10.0.0.1",
+            "status": "401",
+            "url": "/login",
+            "timestamp": f"12/Jul/2026:10:0{minute}:00 +0000"
+        }
+        for minute in [0, 2, 5]
+    ]
+
+    result = analyze_logs(logs)
+
+    assert "10.0.0.1" in result["brute_force_ips"]
+
+
+def test_brute_force_ignores_invalid_timestamps():
+    logs = [
+        {
+            "ip": "10.0.0.2",
+            "status": "401",
+            "url": "/login",
+            "timestamp": "invalid timestamp"
+        },
+        {
+            "ip": "10.0.0.2",
+            "status": "401",
+            "url": "/login",
+            "timestamp": "12/Jul/2026:10:00:00 +0000"
+        },
+        {
+            "ip": "10.0.0.2",
+            "status": "401",
+            "url": "/login",
+            "timestamp": "12/Jul/2026:10:01:00 +0000"
+        }
+    ]
+
+    result = analyze_logs(logs)
+
+    assert "10.0.0.2" not in result["brute_force_ips"]
+
+
+def test_brute_force_multiple_ips():
+    logs = [
+        {
+            "ip": "10.0.0.3",
+            "status": "401",
+            "url": "/login",
+            "timestamp": f"12/Jul/2026:10:0{minute}:00 +0000"
+        }
+        for minute in [0, 1, 2]
+    ]
+
+    logs += [
+        {
+            "ip": "10.0.0.4",
+            "status": "401",
+            "url": "/login",
+            "timestamp": f"12/Jul/2026:11:0{minute}:00 +0000"
+        }
+        for minute in [0, 1, 2]
+    ]
+    result = analyze_logs(logs)
+
+    assert "10.0.0.3" in result["brute_force_ips"]
+    assert "10.0.0.4" in result["brute_force_ips"]

@@ -372,20 +372,23 @@ def analyze_logs(log_entries):
                 "message": f"Suspicious HTTP Method: {method}"
             })
 
-    # Time-Based Brute Force Detection
+        # Advanced Time-Based Brute Force Detection
+
     time_window = timedelta(minutes=5)
     brute_force_threshold = 3
 
     failed_login_times = {}
 
+    # Collect failed login timestamps by IP
     for entry in log_entries:
+
         if str(entry.get("status")) != "401":
             continue
 
         ip = entry.get("ip")
         timestamp = entry.get("timestamp")
 
-        if not timestamp:
+        if not ip or not timestamp:
             continue
 
         try:
@@ -393,43 +396,66 @@ def analyze_logs(log_entries):
                 timestamp,
                 "%d/%b/%Y:%H:%M:%S %z"
             )
-        except ValueError:
+
+        except (ValueError, TypeError):
             continue
 
         failed_login_times.setdefault(ip, []).append(login_time)
 
+    # Analyze each IP using a sliding window
     for ip, timestamps in failed_login_times.items():
 
         timestamps.sort()
 
-        for index, current_time in enumerate(timestamps):
+        left = 0
+        max_attempts = 0
+        attack_window = None
 
-            window_start = current_time - time_window
+        for right in range(len(timestamps)):
 
-            attempts = [
-                t for t in timestamps
-                if window_start <= t <= current_time
-            ]
+            while (
+                timestamps[right] - timestamps[left]
+                > time_window
+            ):
+                left += 1
 
-            if len(attempts) >= brute_force_threshold:
-                if ip not in brute_force_ips:
-                    brute_force_ips.append(ip)
+            current_attempts = right - left + 1
 
-                    alerts.append({
-                        "type": "Brute Force",
-                        "severity": "High",
-                        "ip": ip,
-                        "url": "-",
-                        "message": (
-                            f"{len(attempts)} failed login attempts "
-                            f"within 5 minutes"
-                        )
-                    })
+            if current_attempts > max_attempts:
 
-                    break
+                max_attempts = current_attempts
 
-    ip_risk_scores = calculate_ip_risk_scores(alerts, failed_logins)
+                attack_window = {
+                    "start": timestamps[left].isoformat(),
+                    "end": timestamps[right].isoformat()
+                }
 
+        # Generate one alert per attacking IP
+        if max_attempts >= brute_force_threshold:
+
+            if ip not in brute_force_ips:
+
+                brute_force_ips.append(ip)
+
+                alerts.append({
+                    "type": "Brute Force",
+                    "severity": "High",
+                    "ip": ip,
+                    "url": "-",
+                    "attempts": max_attempts,
+                    "time_window": "5 minutes",
+                    "window_start": attack_window["start"],
+                    "window_end": attack_window["end"],
+                    "message": (
+                        f"{max_attempts} failed login attempts "
+                        f"within 5 minutes"
+                    )
+                })
+
+    ip_risk_scores = calculate_ip_risk_scores(
+        alerts,
+        failed_logins
+    )
     return {
         "failed_logins": failed_logins,
         "brute_force_ips": brute_force_ips,
