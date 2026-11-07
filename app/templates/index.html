@@ -265,308 +265,179 @@
 
                         <tr>
                             <th>IP Address</th>
-                            <th>Risk Score</th>
+                            <th>Current Risk</th>
                             <th>Risk Level</th>
                             <th>Alerts</th>
                             <th>Failed Logins</th>
                             <th>Attack Types</th>
-                            <th>Risk Reasons</th>
+                            <th>Historical Reputation</th>
+                            <th>Reputation Level</th>
+                            <th>Previous Scans</th>
+                            <th>Average Historical Risk</th>
+                            <th>Maximum Historical Risk</th>
+                            <th>Last Seen</th>
+                            <th>Reputation Reasons</th>
                         </tr>
 
                     </thead>
 
                     <tbody>
 
-                        {% for item in ip_risk_scores %}
+    {% for item in ip_risk_scores %}
 
-                        <!-- Color-coded Risk Rows -->
-                        <tr class="
-                            {% if item.risk_level == 'Critical' %}
-                                table-dark
-                            {% elif item.risk_level == 'High' %}
-                                table-danger
-                            {% elif item.risk_level == 'Medium' %}
-                                table-warning
-                            {% else %}
-                                table-success
-                            {% endif %}
-                        ">
+    <tr>
 
-                            <td>{{ item.ip }}</td>
+        <!-- IP Address -->
+        <td>
+            <strong>{{ item.ip }}</strong>
+        </td>
 
-                            <td>
-                                <strong>{{ item.score }}/100</strong>
-                            </td>
+        <!-- Current Risk -->
+        <td>
+            <strong>{{ item.score }}/100</strong>
+        </td>
 
-                            <td>
+        <!-- Current Risk Level -->
+        <td>
 
-                                {% if item.risk_level == "Critical" %}
+            {% if item.risk_level == "Critical" %}
+                <span class="badge bg-dark">Critical</span>
 
-                                    <span class="badge bg-dark">
-                                        Critical
-                                    </span>
+            {% elif item.risk_level == "High" %}
+                <span class="badge bg-danger">High</span>
 
-                                {% elif item.risk_level == "High" %}
+            {% elif item.risk_level == "Medium" %}
+                <span class="badge bg-warning text-dark">Medium</span>
 
-                                    <span class="badge bg-danger">
-                                        High
-                                    </span>
+            {% else %}
+                <span class="badge bg-success">Low</span>
 
-                                {% elif item.risk_level == "Medium" %}
+            {% endif %}
 
-                                    <span class="badge bg-warning text-dark">
-                                        Medium
-                                    </span>
+        </td>
 
-                                {% else %}
+        <!-- Alerts -->
+        <td>{{ item.alert_count }}</td>
 
-                                    <span class="badge bg-success">
-                                        Low
-                                    </span>
+        <!-- Failed Logins -->
+        <td>{{ item.failed_logins }}</td>
 
-                                {% endif %}
+        <!-- Attack Types -->
+        <td>
+            {{ item.attack_types | join(", ") }}
+        </td>
 
-                            </td>
+        <!-- Historical Reputation Score -->
+        <td>
 
-                            <td>{{ item.alert_count }}</td>
+            {% if item.reputation_score is not none %}
 
-                            <td>{{ item.failed_logins }}</td>
+                <strong>
+                    {{ item.reputation_score }}/100
+                </strong>
 
-                            <td>
-                                {{ item.attack_types | join(", ") }}
-                            </td>
+            {% else %}
 
-                            <!-- Risk Reasons -->
-                            <td>
+                N/A
 
-                                {% if item.reasons %}
+            {% endif %}
 
-                                    <ul class="mb-0">
+        </td>
 
-                                        {% for reason in item.reasons %}
+        <!-- Historical Reputation Level -->
+        <td>
 
-                                            <li>{{ reason }}</li>
+            {% if item.reputation_level == "Critical" %}
 
-                                        {% endfor %}
+                <span class="badge bg-dark">Critical</span>
 
-                                    </ul>
+            {% elif item.reputation_level == "High" %}
 
-                                {% else %}
+                <span class="badge bg-danger">High</span>
 
-                                    No details available
+            {% elif item.reputation_level == "Medium" %}
 
-                                {% endif %}
+                <span class="badge bg-warning text-dark">Medium</span>
 
-                            </td>
+            {% elif item.reputation_level == "Low" %}
 
-                        </tr>
+                <span class="badge bg-success">Low</span>
 
-                        {% else %}
+            {% else %}
 
-                        <tr>
+                <span class="badge bg-secondary">Unknown</span>
 
-                            <td colspan="7" class="text-center">
-                                No suspicious IP addresses found.
-                            </td>
+            {% endif %}
 
-                        </tr>
+        </td>
 
-                        {% endfor %}
+        <!-- Previous Scans -->
+        <td>
+            {{ item.previous_scan_count }}
+        </td>
 
-                    </tbody>
+        <!-- Average Historical Risk -->
+        <td>
+            {{ item.avg_historical_score }}/100
+        </td>
 
-                </table>
+        <!-- Maximum Historical Risk -->
+        <td>
+            {{ item.max_historical_score }}/100
+        </td>
 
-            </div>
+        <!-- Last Seen -->
+        <td>
 
-        </div>
+            {% if item.last_seen %}
 
-        <!-- IP Risk Distribution Chart -->
-        <div class="panel mt-4">
+                {{ item.last_seen.strftime("%d-%m-%Y %H:%M") }}
 
-            <h2>IP Risk Distribution</h2>
+            {% else %}
 
-            <div class="chart-container">
+                Never
 
-                <canvas id="riskChart"></canvas>
+            {% endif %}
 
-            </div>
+        </td>
 
-        </div>
+        <!-- Reputation Reasons -->
+        <td>
 
-        <!-- Recent Security Alerts -->
-        <div class="panel mt-4">
+            {% if item.reputation_reasons %}
 
-            <h2>🚨 Recent Security Alerts</h2>
+                <ul class="mb-0">
 
-            <table id="alertsTable" class="table table-striped table-hover align-middle">
+                    {% for reason in item.reputation_reasons %}
 
-                <thead class="table-dark">
-
-                    <tr>
-                        <th>Severity</th>
-                        <th>Attack Type</th>
-                        <th>IP Address</th>
-                        <th>URL</th>
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    {% for alert in alerts %}
-
-                    <tr class="alert-row">
-
-                        <td>
-
-                            {% if alert.severity == "High" %}
-
-                                <span class="badge bg-danger">
-                                    High
-                                </span>
-
-                            {% else %}
-
-                                <span class="badge bg-warning text-dark">
-                                    Medium
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-                        <td>{{ alert.type }}</td>
-
-                        <td>{{ alert.ip }}</td>
-
-                        <td>{{ alert.url }}</td>
-
-                    </tr>
+                        <li>{{ reason }}</li>
 
                     {% endfor %}
 
-                </tbody>
+                </ul>
 
-            </table>
+            {% else %}
 
-        </div>
+                No historical information
 
-        <!-- Charts -->
-        <div class="row mt-4">
+            {% endif %}
 
-            <!-- Status Code Distribution -->
-            <div class="col-lg-6 mb-4">
+        </td>
 
-                <div class="panel">
+    </tr>
 
-                    <h2>Status Code Distribution</h2>
+    {% else %}
 
-                    <div class="chart-container">
+    <tr>
 
-                        <canvas id="statusChart"></canvas>
+        <td colspan="13" class="text-center">
+            No suspicious IP addresses found.
+        </td>
 
-                    </div>
+    </tr>
 
-                </div>
+    {% endfor %}
 
-            </div>
-
-            <!-- Attack Summary -->
-            <div class="col-lg-6 mb-4">
-
-                <div class="panel">
-
-                    <h2>Attack Summary</h2>
-
-                    <div class="chart-container">
-
-                        <canvas id="attackChart"></canvas>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-<!-- Pass Flask Data to JavaScript -->
-<script>
-
-    const statusData = JSON.parse('{{ status_counts | tojson }}');
-
-    const attackData = JSON.parse('{{ attack_summary | tojson | safe }}');
-
-    const riskData = JSON.parse('{{ ip_risk_scores | tojson }}');
-
-    // Calculate IP Risk Distribution
-    const riskLevels = {
-
-        Low: 0,
-        Medium: 0,
-        High: 0,
-        Critical: 0
-
-    };
-
-    riskData.forEach(item => {
-
-        if (riskLevels[item.risk_level] !== undefined) {
-
-            riskLevels[item.risk_level]++;
-
-        }
-
-    });
-
-    // Risk Distribution Doughnut Chart
-    new Chart(document.getElementById("riskChart"), {
-
-        type: "doughnut",
-
-        data: {
-
-            labels: Object.keys(riskLevels),
-
-            datasets: [{
-
-                label: "IP Addresses",
-
-                data: Object.values(riskLevels),
-
-                backgroundColor: [
-                    "#198754",
-                    "#ffc107",
-                    "#dc3545",
-                    "#212529"
-                ]
-
-            }]
-
-        },
-
-        options: {
-
-            responsive: true,
-
-            maintainAspectRatio: false
-
-        }
-
-    });
-
-</script>
-
-<!-- External JavaScript Files -->
-<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
-
-<script src="{{ url_for('static', filename='js/search.js') }}"></script>
-
-</body>
+</tbody>
 
 </html>

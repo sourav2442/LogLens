@@ -8,6 +8,7 @@ from reportlab.lib import colors
 
 from parser.parser import parse_logs
 from database.scan_storage import save_scan
+from database.ip_reputation import enrich_ip_reputation
 
 from reportlab.platypus import (
     SimpleDocTemplate,
@@ -29,6 +30,11 @@ app = Flask(
 def home():
     # Parse logs and analyze them
     results = parse_logs()
+
+     # Enrich IP risk reports with historical reputation.
+    results["ip_risk_scores"] = enrich_ip_reputation(
+        results.get("ip_risk_scores", [])
+    )
 
     # Send data to the HTML template
     return render_template(
@@ -65,6 +71,11 @@ def upload():
     uploaded_file.save(file_path)
 
     results = parse_logs(file_path)
+
+    # Add historical IP reputation before saving the current scan.
+    results["ip_risk_scores"] = enrich_ip_reputation(
+        results.get("ip_risk_scores", [])
+    )
 
     # Save scan results to MongoDB Atlas
 
